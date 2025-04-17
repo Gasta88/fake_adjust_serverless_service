@@ -1,2 +1,2 @@
 bucket = "terraform-data-dev-states"
-prefix    = "data-terraform-state-files/adjust-api-function.tfstate"
+prefix    = "data-terraform-state-files/fake-adjust-serverless-service.tfstate"
