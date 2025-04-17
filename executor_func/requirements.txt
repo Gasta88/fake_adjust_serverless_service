@@ -1,0 +1,8 @@
+functions-framework==3.*
+google-cloud-bigquery
+google-cloud-storage
+pandas_gbq
+pyarrow
+tqdm
+gcsfs
+fsspec
