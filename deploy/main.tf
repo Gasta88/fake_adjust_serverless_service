@@ -17,7 +17,7 @@ terraform {
 #--------------------------- Cloud Storage
 
 resource "google_storage_bucket" "gcf-storage" {
-  name     = "adjust-api-functions-${terraform.workspace}"
+  name     = "fass-${terraform.workspace}"
   location = "us-central1"
   lifecycle {
     prevent_destroy = false
@@ -60,8 +60,8 @@ resource "google_storage_bucket_object" "executor-archive" {
 
 resource "google_cloud_scheduler_job" "every-2-hours" {
   paused           = false
-  name             = "adjust-api-function-2h-trigger-${terraform.workspace}"
-  description      = "Trigger adjust-api-function every 2 hours"
+  name             = "fass-2h-trigger-${terraform.workspace}"
+  description      = "Trigger Fake Adjust Serverless Service every 2 hours"
   schedule         = "0 5,7,9,11,13,15,17,19,21 * * *"
   time_zone        = "Europe/Berlin"
   attempt_deadline = "1200s"
@@ -88,8 +88,8 @@ resource "google_cloud_scheduler_job" "every-2-hours" {
 
 resource "google_cloud_scheduler_job" "every-7-days" {
   paused           = false
-  name             = "adjust-api-function-7d-trigger-${terraform.workspace}"
-  description      = "Trigger adjust-api-function every 7 days"
+  name             = "fass-7d-trigger-${terraform.workspace}"
+  description      = "Trigger Fake Adjust Serverless Service every 7 days"
   schedule         = "45 0 * * 0"
   time_zone        = "Europe/Berlin"
   attempt_deadline = "1200s"
@@ -115,8 +115,8 @@ resource "google_cloud_scheduler_job" "every-7-days" {
 
 resource "google_cloud_scheduler_job" "every-1-month" {
   paused           = false
-  name             = "adjust-api-function-1m-trigger-${terraform.workspace}"
-  description      = "Trigger adjust-api-function every 1 month"
+  name             = "fass-1m-trigger-${terraform.workspace}"
+  description      = "Trigger Fake Adjust Serverless Service every 1 month"
   schedule         = "0 0 1 * *"
   time_zone        = "Europe/Berlin"
   attempt_deadline = "1200s"
@@ -143,9 +143,9 @@ resource "google_cloud_scheduler_job" "every-1-month" {
 #--------------------------- Cloud Functions
 
 resource "google_cloudfunctions2_function" "orchestrator-function" {
-  name = "adjust-api-orchestrator-${terraform.workspace}"
+  name = "fass-orchestrator-${terraform.workspace}"
   location = "us-central1"
-  description = "Coordinate Adjust Report API executor and loader functions"
+  description = "Coordinate Fake Adjust Report API executor and loader functions"
 
   build_config {
     runtime = "python311"
@@ -170,9 +170,9 @@ resource "google_cloudfunctions2_function" "orchestrator-function" {
 }
 
 resource "google_cloudfunctions2_function" "executor-function" {
-  name = "adjust-api-executor-${terraform.workspace}"
+  name = "fass-executor-${terraform.workspace}"
   location = "us-central1"
-  description = "Call Adjust Report API for data extraction"
+  description = "Call Fake Adjust Report API for data extraction"
 
   build_config {
     runtime = "python311"
