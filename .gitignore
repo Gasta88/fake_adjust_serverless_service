@@ -1,8 +1,8 @@
 # Terraform
 .terraform
 .terraform.lock.hcl
-deployment/*.json
-deployment/*.out
+deploy/*.json
+deploy/*.out
 
 # OSX
 .DS_Store

@@ -1,0 +1,6 @@
+# Ignore the following files and directories
+node_modules/
+__pycache__/
+*.pyc
+*.log
+*.tmp
