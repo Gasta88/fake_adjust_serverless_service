@@ -1,6 +1,6 @@
 provider "google" {
   region = "us-central1"
-  project = "justplay-data"
+  project = "eighth-duality-457819-r4"
 }
 
 terraform {
