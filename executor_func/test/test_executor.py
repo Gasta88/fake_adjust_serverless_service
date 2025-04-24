@@ -141,7 +141,7 @@ class ExecutorTestCase(unittest.TestCase):
 
     def test_get_bq_tables(self):
         """Test get_bq_tables function"""
-        project_id = "justplay-data"
+        project_id = "eighth-duality-457819-r4"
         dataset_name = "analytics_test"
         expected_raw_id = (
             f"{project_id}.{dataset_name}.adjust_spend_report_by_channel_raw"
@@ -155,10 +155,10 @@ class ExecutorTestCase(unittest.TestCase):
 
     def test_get_temp_prefix(self):
         """Test get_temp_prefix function"""
-        bucket_name = "justplay-data"
+        bucket_name = "eighth-duality-457819-r4"
         start_date = "2024-01-01"
         platform = "android"
-        expected = "justplay-data/temp_data/android/adjust_report_data_2024_01_01.csv"
+        expected = "eighth-duality-457819-r4/temp_data/android/adjust_report_data_2024_01_01.csv"
         res = get_temp_prefix(bucket_name, start_date, platform)
         self.assertEqual(res, expected)
 
@@ -173,37 +173,37 @@ class ExecutorTestCase(unittest.TestCase):
             return mock_blob
 
         mock_gcs = mock_obj.return_value
-        bucket_name = "justplay-data"
+        bucket_name = "eighth-duality-457819-r4"
         scheduler_id = "7d"
         expected = [
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_01.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_02.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_03.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_04.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_05.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_06.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_07.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_08.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_09.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_10.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_11.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_12.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_13.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_14.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_01.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_02.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_03.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_04.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_05.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_06.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_07.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_08.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_09.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_10.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_11.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_12.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_13.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_14.csv",
+            "eighth-duality-457819-r4/temp_data/android/adjust_report_data_2024_01_01.csv",
+            "eighth-duality-457819-r4/temp_data/android/adjust_report_data_2024_01_02.csv",
+            "eighth-duality-457819-r4/temp_data/android/adjust_report_data_2024_01_03.csv",
+            "eighth-duality-457819-r4/temp_data/android/adjust_report_data_2024_01_04.csv",
+            "eighth-duality-457819-r4/temp_data/android/adjust_report_data_2024_01_05.csv",
+            "eighth-duality-457819-r4/temp_data/android/adjust_report_data_2024_01_06.csv",
+            "eighth-duality-457819-r4/temp_data/android/adjust_report_data_2024_01_07.csv",
+            "eighth-duality-457819-r4/temp_data/android/adjust_report_data_2024_01_08.csv",
+            "eighth-duality-457819-r4/temp_data/android/adjust_report_data_2024_01_09.csv",
+            "eighth-duality-457819-r4/temp_data/android/adjust_report_data_2024_01_10.csv",
+            "eighth-duality-457819-r4/temp_data/android/adjust_report_data_2024_01_11.csv",
+            "eighth-duality-457819-r4/temp_data/android/adjust_report_data_2024_01_12.csv",
+            "eighth-duality-457819-r4/temp_data/android/adjust_report_data_2024_01_13.csv",
+            "eighth-duality-457819-r4/temp_data/android/adjust_report_data_2024_01_14.csv",
+            "eighth-duality-457819-r4/temp_data/ios/adjust_report_data_2024_01_01.csv",
+            "eighth-duality-457819-r4/temp_data/ios/adjust_report_data_2024_01_02.csv",
+            "eighth-duality-457819-r4/temp_data/ios/adjust_report_data_2024_01_03.csv",
+            "eighth-duality-457819-r4/temp_data/ios/adjust_report_data_2024_01_04.csv",
+            "eighth-duality-457819-r4/temp_data/ios/adjust_report_data_2024_01_05.csv",
+            "eighth-duality-457819-r4/temp_data/ios/adjust_report_data_2024_01_06.csv",
+            "eighth-duality-457819-r4/temp_data/ios/adjust_report_data_2024_01_07.csv",
+            "eighth-duality-457819-r4/temp_data/ios/adjust_report_data_2024_01_08.csv",
+            "eighth-duality-457819-r4/temp_data/ios/adjust_report_data_2024_01_09.csv",
+            "eighth-duality-457819-r4/temp_data/ios/adjust_report_data_2024_01_10.csv",
+            "eighth-duality-457819-r4/temp_data/ios/adjust_report_data_2024_01_11.csv",
+            "eighth-duality-457819-r4/temp_data/ios/adjust_report_data_2024_01_12.csv",
+            "eighth-duality-457819-r4/temp_data/ios/adjust_report_data_2024_01_13.csv",
+            "eighth-duality-457819-r4/temp_data/ios/adjust_report_data_2024_01_14.csv",
         ]
 
         mock_gcs.list_blobs.return_value = [
@@ -263,7 +263,7 @@ class ExecutorTestCase(unittest.TestCase):
         mock_to_gbq.return_value = None
         write_raw_to_bq(df, table_id)
         mock_to_gbq.assert_called_with(
-            df, table_id, project_id="justplay-data", if_exists="append"
+            df, table_id, project_id="eighth-duality-457819-r4", if_exists="append"
         )
 
     @patch("google.cloud.bigquery.Client")
@@ -271,8 +271,8 @@ class ExecutorTestCase(unittest.TestCase):
         """Test update_day_table function"""
         mock_bq = mock_obj.return_value
         all_files = [
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_01.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_01.csv",
+            "eighth-duality-457819-r4/temp_data/android/adjust_report_data_2024_01_01.csv",
+            "eighth-duality-457819-r4/temp_data/ios/adjust_report_data_2024_01_01.csv",
         ]
         table_id = "analytics_test.adjust_spend_report_by_channel_day"
         update_day_table(all_files, self.today_datetime, table_id)

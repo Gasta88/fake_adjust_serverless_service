@@ -3,7 +3,7 @@ IMAGE_NAME_API := fake_adjust
 IMAGE_NAME_TEST := python_testing
 IMAGE_TAG := latest
 ENV := dev
-ROOT_DIR := $(shell pwd)
+GAR_LOCATION := us-central1-docker.pkg.dev/eighth-duality-457819-r4/data-ecr
 
 #Terraform Unit-tests
 terraform_unit_tests:
@@ -32,24 +32,35 @@ python_unit_tests:
 # Build the Docker image and Run API Image
 deploy_api:
 	@echo "Building Docker image..."
-	@if ! docker build -t $(IMAGE_NAME_API):$(IMAGE_TAG) -f fake_adjust_api/Dockerfile fake_adjust_api; then \
+	@if ! docker build fake_adjust_api --file fake_adjust_api/Dockerfile --tag $(GAR_LOCATION)/$(IMAGE_NAME_API):$(IMAGE_TAG); then \
         echo "Docker image build failed."; \
 		docker rmi -f $(IMAGE_NAME_API):$(IMAGE_TAG) || true; \
         exit 1; \
 	fi
-	@echo "Running Docker container..."
-	@if ! docker run -d -p 8000:8000 $(IMAGE_NAME_API):$(IMAGE_TAG); then \
-        echo "Docker container failed to start."; \
+	@echo "Pushing Docker container..."
+	@if ! docker push $(GAR_LOCATION)/$(IMAGE_NAME_API):$(IMAGE_TAG); then \
+        echo "Docker container failed to be pushed."; \
         exit 1; \
 	fi
-	@echo "Docker container is running. API is available at http://127.0.0.1:8000"
+	@echo "Destroy existing version on Cloud Run if it exists"
+	@gcloud run services delete fake_adjust_api \
+		--region us-central1 \
+		--platform managed --quiet || true
+	@echo "Deploy new version to Cloud Run"
+	@gcloud run deploy fake_adjust_api \
+		--image $(GAR_LOCATION)/$(IMAGE_NAME_API):$(IMAGE_TAG) \
+		--region us-central1 \
+		--set-env-vars GCS_BUCKET=fass-${ENV},SERVICE_NAME=fake_adjust_api \
+		--platform managed \
+		--allow-unauthenticated
 
 
 # Clean up Docker resources
 clean_api:
-	@echo "Cleaning up Docker resources..."
-	@docker rm -f $(shell docker ps -aq -f ancestor=$(IMAGE_NAME_API):$(IMAGE_TAG)) || true
-	@docker rmi $(IMAGE_NAME_API):$(IMAGE_TAG) || true
+	@echo "Destroy existing version on Cloud Run if it exists"
+	@gcloud run services delete fake_adjust_api \
+		--region us-central1 \
+		--platform managed --quiet || true
 
 #FASS GCP Deployment
 #Build FASS

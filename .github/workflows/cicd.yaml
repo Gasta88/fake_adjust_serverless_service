@@ -38,7 +38,7 @@
 #       credentials:
 #         password: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #         username: _json_key
-#       image: us-central1-docker.pkg.dev/justplay-data/data-ecr/cloud_functions:v0.1
+#       image: us-central1-docker.pkg.dev/eighth-duality-457819-r4/data-ecr/cloud_functions:v0.1
 #     runs-on: ubuntu-latest
 #     steps:
 #       - name: Checkout code into workspace directory
@@ -61,7 +61,7 @@
 #       credentials:
 #         password: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #         username: _json_key
-#       image: us-central1-docker.pkg.dev/justplay-data/data-ecr/cloud_functions:v0.1
+#       image: us-central1-docker.pkg.dev/eighth-duality-457819-r4/data-ecr/cloud_functions:v0.1
 #     runs-on: ubuntu-latest
 #     steps:
 #       - name: Checkout code into workspace directory
@@ -81,8 +81,8 @@
 #       - name: Deploy E2E infrastructure
 #         run: |
 #           echo "Clean up testing tables"
-#           bq rm -f -t justplay-data:analytics_test.adjust_spend_report_by_channel_raw
-#           bq rm -f -t justplay-data:analytics_test.adjust_spend_report_by_channel_day
+#           bq rm -f -t eighth-duality-457819-r4:analytics_test.adjust_spend_report_by_channel_raw
+#           bq rm -f -t eighth-duality-457819-r4:analytics_test.adjust_spend_report_by_channel_day
 #           cd deploy
 #           terraform init -backend-config=dev.gcs.tfbackend
 #           terraform workspace select e2e-test || terraform workspace new e2e-test
@@ -94,16 +94,16 @@
 #           max_attempts: 3
 #           command: |
 #             echo "Clean up leftout testing tables"
-#             bq rm -f -t justplay-data:analytics_test.adjust_spend_report_by_channel_raw
-#             bq rm -f -t justplay-data:analytics_test.adjust_spend_report_by_channel_day
+#             bq rm -f -t eighth-duality-457819-r4:analytics_test.adjust_spend_report_by_channel_raw
+#             bq rm -f -t eighth-duality-457819-r4:analytics_test.adjust_spend_report_by_channel_day
 #             cd test/e2e_tests
 #             python run_e2e_test.py
 #       - name: Clean up
 #         if: always()
 #         run: |
 #           echo "Clean up testing tables"
-#           bq rm -f -t justplay-data:analytics_test.adjust_spend_report_by_channel_raw
-#           bq rm -f -t justplay-data:analytics_test.adjust_spend_report_by_channel_day
+#           bq rm -f -t eighth-duality-457819-r4:analytics_test.adjust_spend_report_by_channel_raw
+#           bq rm -f -t eighth-duality-457819-r4:analytics_test.adjust_spend_report_by_channel_day
 #           echo "Clean up terraform workspace"
 #           cd deploy
 #           terraform init -backend-config=dev.gcs.tfbackend
@@ -115,7 +115,7 @@
 #       credentials:
 #         password: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #         username: _json_key
-#       image: us-central1-docker.pkg.dev/justplay-data/data-ecr/cloud_functions:v0.1
+#       image: us-central1-docker.pkg.dev/eighth-duality-457819-r4/data-ecr/cloud_functions:v0.1
 #     runs-on: ubuntu-latest
 #     steps:
 #       - name: Checkout code into workspace directory
@@ -132,7 +132,7 @@
 #       credentials:
 #         password: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #         username: _json_key
-#       image: us-central1-docker.pkg.dev/justplay-data/data-ecr/cloud_functions:v0.1
+#       image: us-central1-docker.pkg.dev/eighth-duality-457819-r4/data-ecr/cloud_functions:v0.1
 #     runs-on: ubuntu-latest
 #     timeout-minutes: 15
 #     steps:
