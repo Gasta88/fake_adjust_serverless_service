@@ -52,6 +52,7 @@ jobs:
           python -m unittest discover -s orchestrator_func/test
           python -m unittest discover -s executor_func/test
   write_docs:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code into workspace directory
