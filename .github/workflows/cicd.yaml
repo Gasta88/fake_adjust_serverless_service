@@ -48,7 +48,8 @@ jobs:
         run: gcloud info
       - name: Run python unittest
         run: |
-          pip install -r requirements.txt
+          pip install -r orchestrator_func/requirements.txt
+          pip install -r executor_func/requirements.txt
           python -m unittest discover -s orchestrator_func/test
           python -m unittest discover -s executor_func/test
   write_docs:
