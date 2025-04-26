@@ -1,6 +1,5 @@
 from .configs import config
 from .write import write_log
-from google.cloud import secretmanager
 from google.cloud import storage
 import google.auth.transport.requests
 import google.oauth2.id_token
@@ -41,63 +40,15 @@ def _post_with_url(url, data={}):
     return
 
 
-def get_gcp_secret_value(secret_name, version="1"):
-    """
-    Retrieves the values of the specified GCP secrets for the given project ID.
-
-    Args:
-        secret_name (str): The name of the secret to retrieve.
-        version (str, optional): The version of the secret to retrieve. Defaults to 1.
-
-    Returns:
-        str: The value of the secret.
-    """
-    client = secretmanager.SecretManagerServiceClient()
-    name = name = (
-        f"projects/{config['project_id']}/secrets/{secret_name}/versions/{version}"
-    )
-    response = client.access_secret_version(request={"name": name})
-    payload = response.payload.data.decode("UTF-8")
-    return payload
-
-
-def _get_applovin_mode(date_period):
-    """
-    Determines the applovin mode based on the given date period.
-
-    Args:
-        date_period (str): A string representing the date period in the format "YYYY-MM-DD:HH:MM:SS".
-
-    Returns:
-        str: The applovin mode as a string. If the start date of the date period is before 2023-10-01, the applovin mode is "regular". Otherwise, an empty string is returned.
-    """
-    start_date = str(date_period).split(":")[0]
-    start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d")
-    benchmark_date = datetime.datetime(2023, 10, 1, 0, 0, 0).date()
-    # applovin_mode is 'regular' only for queries before 2023-10-01
-    if start_date_obj.date() < benchmark_date:  # APPLOVIN MODE logic
-        return "&applovin_mode=regular"
-    else:
-        return ""
-
-
 def _get_date_periods(scheduler_id):
     """
-    Returns a list of strings representing the date period based on the given scheduler ID.
+    Generate a list of date periods for a given scheduler ID.
 
-    Parameters:
-        scheduler_id (str): The ID of the scheduler. Valid values are "2h", "7d", and "1m".
+    Args:
+        scheduler_id (str): The ID of the scheduler.
 
     Returns:
-        list: A list of string representing the date period in the format "YYYY-MM-DD:YYYY-MM-DD" if scheduler_id is "2h".
-                     A list of strings representing the date periods in the format "YYYY-MM-DD:YYYY-MM-DD" if scheduler_id is "7d" or "1m".
-
-    Notes:
-        - The date period is determined based on the scheduler ID.
-        - If scheduler_id is "2h", the date period will be the current date and time.
-        - If scheduler_id is "7d", the date period will be the current date and time minus 7 days.
-        - If scheduler_id is "1m", the date period will be the current date and time minus 30 days.
-        - The function calls the set_applovin_mode function to determine the applovin mode based on the date period.
+        list: A list of date periods in the format "start_date=<date>&end_date=<date>".
     """
     date_now = datetime.date.today()
     date_periods = []
@@ -113,22 +64,20 @@ def _get_date_periods(scheduler_id):
     for i in range(days):
         start_date = date_now - datetime.timedelta(days=i)
         end_date = date_now - datetime.timedelta(days=i)
-        applovin_mode = _get_applovin_mode(start_date.strftime("%Y-%m-%d"))
-        date_period = f"{start_date}:{end_date}"
-        date_periods.append(f"&date_period={date_period}" + applovin_mode)
+        date_period = f"start_date={start_date}&end_date={end_date}"
+        date_periods.append(date_period)
     return date_periods
 
 
-def build_urls(scheduler_id, app_token):
+def build_urls(scheduler_id):
     """
-    Builds a list of URLs for the Adjust API based on the provided scheduler ID.
+    Builds a list of URLs for the FASS API based on the provided scheduler ID.
 
     Args:
         scheduler_id (str): The ID of the scheduler. Valid values are "2h", "7d", and "1m".
-        app_token (str): The app token for the Adjust API.
 
     Returns:
-        list: A list of URLs for the Adjust API.
+        list: A list of URLs for the FASS API.
 
     Notes:
         - The function retrieves the app token from Google Cloud Secret Manager.
@@ -138,7 +87,7 @@ def build_urls(scheduler_id, app_token):
         - The function raises a RuntimeError if an error occurs.
     """
     urls = []
-    base_url = f"{config['base_url']}?app_token={app_token}&ad_spend_mode=mixed&attribution_type=all&dimensions={config['dimensions']}&metrics={config['metrics']}"
+    base_url = f"{config['base_url']}?"
     try:
         if scheduler_id not in ["2h", "7d", "1m"]:
             e = write_log("Scheduler ID not valid", None, severity="ERROR")
@@ -151,20 +100,19 @@ def build_urls(scheduler_id, app_token):
     return urls
 
 
-def run_execution(api_key, executor_url, urls, datetime_now, scheduler_id):
+def run_execution(executor_url, urls, datetime_now, scheduler_id):
     """
-    Runs the execution of the Adjust API for the given list of URLs.
+    Runs the execution of the FASS API for the given list of URLs.
 
     This function takes the list of URLs and runs them in parallel by sending
     an asynchronous POST request to the Executor Cloud Function. The Executor
-    Cloud Function will then call the Adjust API and write the data to either
+    Cloud Function will then call the FASS API and write the data to either
     GCS (for 7d and 1m schedulers) or BigQuery (for 2h scheduler).
 
     The function also sets the destination and batch_load flags depending on
     the scheduler ID and the position of the URL in the list.
 
     Args:
-        api_key (str): The API key for the Adjust API.
         executor_url (str): The URL of the Executor Cloud Function.
         urls (list): The list of URLs to run.
         datetime_now (str): The current datetime in ISO format.
@@ -181,10 +129,9 @@ def run_execution(api_key, executor_url, urls, datetime_now, scheduler_id):
         if url == last_url:
             # At the last processed URL, load temp CSV from GCS to BigQuery
             batch_load = True
-        start_date = url.split("date_period=")[1].split(":")[0]
+        start_date = url.split("start_date=")[1].split("&")[0]
         data = {
             "url": url,
-            "adjust_api_key": api_key,
             "datetime_now": datetime_now,
             "start_date": start_date,
             "batch_load": batch_load,

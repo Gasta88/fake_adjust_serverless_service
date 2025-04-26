@@ -149,7 +149,7 @@ resource "google_cloudfunctions2_function" "orchestrator_function" {
 
   build_config {
     runtime = "python311"
-    entry_point = "handle_adjust_api_calls"
+    entry_point = "handle_api_calls"
     source {
       storage_source {
         bucket = google_storage_bucket.gcf_storage.name
@@ -176,7 +176,7 @@ resource "google_cloudfunctions2_function" "executor_function" {
 
   build_config {
     runtime = "python311"
-    entry_point = "call_adjust_api"
+    entry_point = "call_api"
     source {
       storage_source {
         bucket = google_storage_bucket.gcf_storage.name
@@ -196,29 +196,3 @@ resource "google_cloudfunctions2_function" "executor_function" {
   }
 }
 
-#--------------------------- Cloud Run
-
-# data "google_artifact_registry_repository" "docker_registry" {
-#   location = "us-central1"
-#   repository_id = "data-ecr"
-# }
-
-# resource "null_resource" "build_and_push_image" {
-#   provisioner "local-exec" {
-#     command = "docker build ../fake_adjust_api --file ../fake_adjust_api/Dockerfile --tag gcr.io/us-central1-docker.pkg.dev/eighth-duality-457819-r4/${data.google_artifact_registry_repository.docker_registry.name}/fake_adjust:latest && docker push gcr.io/us-central1-docker.pkg.dev/eighth-duality-457819-r4/${data.google_artifact_registry_repository.docker_registry.name}/fake_adjust:latest"
-#   }
-#   depends_on = [ data.google_artifact_registry_repository.docker_registry ]
-# }
-
-# resource "google_cloud_run_service" "fake_api" {
-#   name = "fake-adjust-api"
-#   location = "us-central1"
-#   template {
-#     spec {
-#       containers {
-#         image = "gcr.io/us-central1-docker.pkg.dev/eighth-duality-457819-r4/${data.google_artifact_registry_repository.docker_registry.name}/fake_adjust:latest"
-#       }
-#     }
-#   }
-#   depends_on = [ null_resource.build_and_push_image ]
-# }

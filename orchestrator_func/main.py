@@ -1,6 +1,6 @@
 import functions_framework
 from utils.write import write_log
-from utils.read import build_urls, run_execution, get_gcp_secret_value,check_running_routines
+from utils.read import build_urls, run_execution,check_running_routines
 import os
 import datetime
 import time
@@ -20,7 +20,7 @@ GCS_BUCKET = os.environ.get("GCS_BUCKET", "GCS_BUCKET not set")
 
 # Register an HTTP function with the Functions Framework
 @functions_framework.http
-def handle_adjust_api_calls(request):
+def handle_api_calls(request):
     args = request.get_json(silent=True)
     print(write_log("Start function", f"Args: {args}"))
     
@@ -31,18 +31,10 @@ def handle_adjust_api_calls(request):
 
 
     if args:
-        print(
-            write_log(
-                "Retrieve secrets from Secret Manager",
-                "Keys: adjust_app_token, adjust_justplay",
-            )
-        )
-        app_token = get_gcp_secret_value("adjust_app_token")
-        api_key = get_gcp_secret_value("adjust_justplay")
         print(write_log(f'Build urls for schedule {args["scheduler_id"]}'))
-        urls = build_urls(args["scheduler_id"], app_token)
+        urls = build_urls(args["scheduler_id"])
         print(write_log("Generated urls", f"Urls: {urls}"))
-        run_execution(api_key, EXECUTOR_URL, urls, DATETIME_NOW, args["scheduler_id"])
+        run_execution(EXECUTOR_URL, urls, DATETIME_NOW, args["scheduler_id"])
         
         count = 0
         cleaned = False

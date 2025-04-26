@@ -31,7 +31,7 @@ The retrieved data is later recorded on BigQuery and sanitized via ELT process.
 ## Data workflow
 
 - At a fixed interval, a scheduler send a HTTP call to the *orchestrator* Cloud Function.
-- The *orchestrator* gets the Adjust API key and the App Token secrets from the Secret Manager.
+- The *orchestrator* gets the FASS API key and the App Token secrets from the Secret Manager.
 - According to the schedule, it builds the right type and the right amount of URLs (1, 7 or 30).
 - In a "fire-and-forget" fashion, it will send each URL to the *executor* Cloud Function.
 - Each URL will create an isolated instance of the *executor* Cloud Function.

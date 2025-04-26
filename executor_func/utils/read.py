@@ -29,11 +29,11 @@ def get_bq_dataset(function_name):
 
 def get_with_url(url, api_key=""):
     """
-    Fetches data from a specified URL using an Adjust API key and returns the data as a list of rows.
+    Fetches data from a specified URL using an FASS API key and returns the data as a list of rows.
 
     Args:
         url (str): The URL to fetch data from.
-        api_key (str, optional): The Adjust API key to use for authentication. Defaults to an empty string.
+        api_key (str, optional): The FASS API key to use for authentication. Defaults to an empty string.
 
     Returns:
         list: A list of rows containing the fetched data.
