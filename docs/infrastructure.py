@@ -6,11 +6,11 @@ from diagrams.custom import Custom
 
 # graph_attr = {"bgcolor": "aliceblue"}
 
-with Diagram("Adjust Serverless Service", show=False):
+with Diagram("FakeAdjust Serverless Service", show=False):
 
     orchestrator = GCF("Orchestrator")
 
-    cc_adjust = Custom("Adjust REST API", "./adjust_icon.png")
+    cc_adjust = Custom("Fake Adjust REST API", "./adjust_icon.png")
 
     bq = BigQuery("Analytics dataset")
 
