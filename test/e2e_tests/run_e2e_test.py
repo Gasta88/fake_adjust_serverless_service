@@ -7,11 +7,11 @@ import json
 import sys
 import time
 
-TABLE_RAW_ID = "justplay-data.analytics_test.adjust_spend_report_by_channel_raw"
-TABLE_DAY_ID = "justplay-data.analytics_test.adjust_spend_report_by_channel_day"
-ORCHESTRATOR_URL = "https://us-central1-justplay-data.cloudfunctions.net/adjust-api-orchestrator-e2e-test"
+TABLE_RAW_ID = "eighth-duality-457819-r4.analytics_test.adjust_spend_report_by_channel_raw"
+TABLE_DAY_ID = "eighth-duality-457819-r4.analytics_test.adjust_spend_report_by_channel_day"
+ORCHESTRATOR_URL = "https://us-central1-eighth-duality-457819-r4.cloudfunctions.net/adjust-api-orchestrator-e2e-test"
 EXECUTOR_URL = (
-    "https://us-central1-justplay-data.cloudfunctions.net/adjust-api-executor-e2e-test"
+    "https://us-central1-eighth-duality-457819-r4.cloudfunctions.net/adjust-api-executor-e2e-test"
 )
 
 
@@ -22,7 +22,7 @@ def set_bq_tables():
     Returns:
         tuple: A tuple containing the IDs of the raw and day tables.
     """
-    client = bigquery.Client(project="justplay-data")
+    client = bigquery.Client(project="eighth-duality-457819-r4")
     try:
         client.get_table(TABLE_RAW_ID)
         client.get_table(TABLE_DAY_ID)
