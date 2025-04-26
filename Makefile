@@ -6,7 +6,7 @@ GAR_LOCATION := us-central1-docker.pkg.dev/eighth-duality-457819-r4/data-ecr
 REGION := us-central1
 SERVICE_NAME := fass-api
 
-#Fake Adjust API commands
+#Fake FASS API commands
 # Build the Docker image and Run API Image
 deploy_api:
 	@echo "Building Docker image..."

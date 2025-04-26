@@ -21,7 +21,7 @@ GCS_BUCKET = os.environ.get("GCS_BUCKET", "GCS_BUCKET not set")
 
 # Register an HTTP function with the Functions Framework
 @functions_framework.http
-def call_adjust_api(request):
+def call_api(request):
     args = request.get_json(silent=True)
     print(write_log(f"Start function on {args['start_date']}", f"Args: {args}"))
     if args:
@@ -29,7 +29,7 @@ def call_adjust_api(request):
         dataset_name = get_bq_dataset(function_name)
         table_raw_id, table_day_id = get_bq_tables(dataset_name)
         for platform in ["ios", "android"]:
-            final_url = f"{args['url']}&os_name__in={platform}"
+            final_url = f"{args['url']}&platform={platform}"
             print(
                 write_log(
                     f"Fetching data for {platform} on {args['start_date']}",

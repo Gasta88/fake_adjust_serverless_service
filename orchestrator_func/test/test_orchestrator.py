@@ -2,7 +2,6 @@ import unittest
 from orchestrator_func.utils.read import (
     build_urls,
     run_execution,
-    get_gcp_secret_value,
     check_running_routines
 )
 import datetime
@@ -23,39 +22,26 @@ class OrcheatratorTestCase(unittest.TestCase):
 
     def test_build_urls(self):
         """Test build_urls function"""
-        app_token = "super_secret_token"
         scheduler_id = "2h"
         first_start_date = (
             datetime.datetime.now() - datetime.timedelta(days=4)
         ).strftime("%Y-%m-%d")
-        res = build_urls(scheduler_id, app_token)
+        res = build_urls(scheduler_id)
         self.assertTrue(len(res) == 5)
         self.assertEqual(
             res[-1],
-            f"https://dash.adjust.com/control-center/reports-service/report?app_token=super_secret_token&ad_spend_mode=mixed&attribution_type=all&dimensions=channel,campaign,creative,country_code,os_name,day&metrics=installs,cost,clicks,impressions,limit_ad_tracking_installs&date_period={first_start_date}:{first_start_date}",
+            f"https://fass-api-874544665874.us-central1.run.app/reporting?start_date={first_start_date}&end_date={first_start_date}",
         )
         scheduler_id = "7d"
         first_start_date = (
             datetime.datetime.now() - datetime.timedelta(days=13)
         ).strftime("%Y-%m-%d")
-        res = build_urls(scheduler_id, app_token)
+        res = build_urls(scheduler_id)
         self.assertTrue(len(res) == 14)
-        self.assertEqual(
-            res[-1],
-            f"https://dash.adjust.com/control-center/reports-service/report?app_token=super_secret_token&ad_spend_mode=mixed&attribution_type=all&dimensions=channel,campaign,creative,country_code,os_name,day&metrics=installs,cost,clicks,impressions,limit_ad_tracking_installs&date_period={first_start_date}:{first_start_date}",
-        )
         scheduler_id = "1m"
-        res = build_urls(scheduler_id, app_token)
+        res = build_urls(scheduler_id)
         self.assertTrue(len(res) == 30)
 
-    @patch("orchestrator_func.utils.read.secretmanager.SecretManagerServiceClient")
-    def test_get_gcp_secret_value(self, mock_smc):
-        """Test get_gcp_secret_value function"""
-        mock_smc.return_value.access_secret_version.return_value.payload.data = (
-            b"super_secret_token"
-        )
-        res = get_gcp_secret_value("adjust_app_token")
-        self.assertEqual(res, "super_secret_token")
 
     @patch("google.auth.transport.requests.Request")
     @patch("google.oauth2.id_token.fetch_id_token")
@@ -63,10 +49,9 @@ class OrcheatratorTestCase(unittest.TestCase):
         executor_url = "https://example-project.cloudfunctions.net/my-function"
         token = "my_awesome_token"
         mock_fit.return_value = token
-        api_key = "my_awesome_api_key"
-        urls = [f"my/first/awesome/url&date_period={self.today_date}:{self.today_date}"]
+        urls = [f"my/first/awesome/url&start_date={self.today_date}&end_date={self.today_date}"]
         scheduler_id = "2h"
-        run_execution(api_key, executor_url, urls, self.today_datetime, scheduler_id)
+        run_execution(executor_url, urls, self.today_datetime, scheduler_id)
         mock_req.assert_called_once_with(
             token,
             executor_url,
