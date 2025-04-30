@@ -48,7 +48,7 @@ def write_raw_to_bq(df, table_id):
 
 def update_day_table(all_files, datetime_now, table_id):
     """
-    Updates the updatedAt field in the adjust_spend_report_by_channel_day table in BigQuery with the current datetime.
+    Updates the updatedAt field in the fass_day table in BigQuery with the current datetime.
 
     Args:
         all_files (list): A list of file names in the GCS temp_data directory.
@@ -62,7 +62,7 @@ def update_day_table(all_files, datetime_now, table_id):
     start_dates = []
     for file_name in all_files:
         start_date = (
-            file_name.split("adjust_report_data_")[1]
+            file_name.split("fass_data_")[1]
             .replace(".csv", "")
             .replace("_", "-")
         )

@@ -1,7 +1,0 @@
-google-cloud-bigquery
-google-cloud-bigquery-storage
-google-cloud-logging
-google-auth
-pandas
-db-dtypes
-python-dotenv

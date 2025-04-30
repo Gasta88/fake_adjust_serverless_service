@@ -144,10 +144,10 @@ class ExecutorTestCase(unittest.TestCase):
         project_id = "eighth-duality-457819-r4"
         dataset_name = "analytics_test"
         expected_raw_id = (
-            f"{project_id}.{dataset_name}.adjust_spend_report_by_channel_raw"
+            f"{project_id}.{dataset_name}.fass_raw"
         )
         expected_day_id = (
-            f"{project_id}.{dataset_name}.adjust_spend_report_by_channel_day"
+            f"{project_id}.{dataset_name}.fass_day"
         )
         res_raw, res_day = get_bq_tables(dataset_name)
         self.assertEqual(res_raw, expected_raw_id)
@@ -259,7 +259,7 @@ class ExecutorTestCase(unittest.TestCase):
                 }
             ]
         )
-        table_id = "analytics_test.adjust_spend_report_by_channel_raw"
+        table_id = "analytics_test.fass_raw"
         mock_to_gbq.return_value = None
         write_raw_to_bq(df, table_id)
         mock_to_gbq.assert_called_with(
@@ -274,7 +274,7 @@ class ExecutorTestCase(unittest.TestCase):
             "eighth-duality-457819-r4/temp_data/android/adjust_report_data_2024_01_01.csv",
             "eighth-duality-457819-r4/temp_data/ios/adjust_report_data_2024_01_01.csv",
         ]
-        table_id = "analytics_test.adjust_spend_report_by_channel_day"
+        table_id = "analytics_test.fass_day"
         update_day_table(all_files, self.today_datetime, table_id)
         mock_bq.query.assert_called_with(
             f"""INSERT INTO {table_id}
