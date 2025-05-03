@@ -1,160 +1,104 @@
-# ---
-# jobs:
-#   terraform_unit_tests:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout code into workspace directory
-#         uses: actions/checkout@v2
-#       - name: Google Auth
-#         uses: google-github-actions/auth@v2
-#         with:
-#           credentials_json: ${{ secrets.SERVICE_ACCOUNT_KEY }}
-#       - name: Set up Cloud SDK
-#         uses: google-github-actions/setup-gcloud@v2
-#       - name: Use gcloud CLI
-#         run: gcloud info
-#       - name: Set up Terraform
-#         uses: hashicorp/setup-terraform@v3
-#         with:
-#           terraform_version: 1.9.3
-#       - name: Run terraform unittest
-#         run: |
-#           cd deploy
-#           terraform init -backend-config=dev.gcs.tfbackend
-#           terraform workspace select unit-test || terraform workspace new unit-test
-#           terraform plan -out=plan.out
-#           terraform show -json plan.out > plan.json
-#           cd ../test/unit_tests
-#           python -m unittest check_terraform_plan.py
-#       - name: Clean up
-#         if: always()
-#         run: |
-#           cd deploy
-#           terraform init -backend-config=dev.gcs.tfbackend
-#           terraform workspace select default
-#           terraform workspace delete -force unit-test
-#   python_unit_tests:
-#     container:
-#       credentials:
-#         password: ${{ secrets.SERVICE_ACCOUNT_KEY }}
-#         username: _json_key
-#       image: us-central1-docker.pkg.dev/justplay-data/data-ecr/cloud_functions:v0.1
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout code into workspace directory
-#         uses: actions/checkout@v2
-#       - name: Google Auth
-#         uses: google-github-actions/auth@v2
-#         with:
-#           credentials_json: ${{ secrets.SERVICE_ACCOUNT_KEY }}
-#       - name: Set up Cloud SDK
-#         uses: google-github-actions/setup-gcloud@v2
-#       - name: Use gcloud CLI
-#         run: gcloud info
-#       - name: Run python unittest
-#         run: |
-#           python -m unittest discover -s orchestrator_func/test
-#           python -m unittest discover -s executor_func/test
-#   python_integration_tests:
-#     if: github.ref == 'refs/heads/development'
-#     container:
-#       credentials:
-#         password: ${{ secrets.SERVICE_ACCOUNT_KEY }}
-#         username: _json_key
-#       image: us-central1-docker.pkg.dev/justplay-data/data-ecr/cloud_functions:v0.1
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout code into workspace directory
-#         uses: actions/checkout@v2
-#       - name: Google Auth
-#         uses: google-github-actions/auth@v2
-#         with:
-#           credentials_json: ${{ secrets.SERVICE_ACCOUNT_KEY }}
-#       - name: Set up Cloud SDK
-#         uses: google-github-actions/setup-gcloud@v2
-#       - name: Use gcloud CLI
-#         run: gcloud info
-#       - name: Set up Terraform
-#         uses: hashicorp/setup-terraform@v3
-#         with:
-#           terraform_version: 1.9.3
-#       - name: Deploy E2E infrastructure
-#         run: |
-#           echo "Clean up testing tables"
-#           bq rm -f -t justplay-data:analytics_test.adjust_spend_report_by_channel_raw
-#           bq rm -f -t justplay-data:analytics_test.adjust_spend_report_by_channel_day
-#           cd deploy
-#           terraform init -backend-config=dev.gcs.tfbackend
-#           terraform workspace select e2e-test || terraform workspace new e2e-test
-#           terraform apply --auto-approve --parallelism=1
-#       - name: Run E2E test
-#         uses: nick-fields/retry@v3
-#         with:
-#           timeout_minutes: 15
-#           max_attempts: 3
-#           command: |
-#             echo "Clean up leftout testing tables"
-#             bq rm -f -t justplay-data:analytics_test.adjust_spend_report_by_channel_raw
-#             bq rm -f -t justplay-data:analytics_test.adjust_spend_report_by_channel_day
-#             cd test/e2e_tests
-#             python run_e2e_test.py
-#       - name: Clean up
-#         if: always()
-#         run: |
-#           echo "Clean up testing tables"
-#           bq rm -f -t justplay-data:analytics_test.adjust_spend_report_by_channel_raw
-#           bq rm -f -t justplay-data:analytics_test.adjust_spend_report_by_channel_day
-#           echo "Clean up terraform workspace"
-#           cd deploy
-#           terraform init -backend-config=dev.gcs.tfbackend
-#           terraform destroy --auto-approve
-#           terraform workspace select default
-#           terraform workspace delete -force e2e-test
-#   write_docs:
-#     container:
-#       credentials:
-#         password: ${{ secrets.SERVICE_ACCOUNT_KEY }}
-#         username: _json_key
-#       image: us-central1-docker.pkg.dev/justplay-data/data-ecr/cloud_functions:v0.1
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout code into workspace directory
-#         uses: actions/checkout@v2
-#       - name: Setup Graphviz
-#         uses: ts-graphviz/setup-graphviz@v2
-#       - name: Generate docs
-#         run: |
-#           cd docs
-#           python infrastructure.py
-#   deploy_production:
-#     if: github.ref == 'refs/heads/main'
-#     container:
-#       credentials:
-#         password: ${{ secrets.SERVICE_ACCOUNT_KEY }}
-#         username: _json_key
-#       image: us-central1-docker.pkg.dev/justplay-data/data-ecr/cloud_functions:v0.1
-#     runs-on: ubuntu-latest
-#     timeout-minutes: 15
-#     steps:
-#       - name: Checkout code into workspace directory
-#         uses: actions/checkout@v2
-#       - name: Google Auth
-#         uses: google-github-actions/auth@v2
-#         with:
-#           credentials_json: ${{ secrets.SERVICE_ACCOUNT_KEY }}
-#       - name: Set up Cloud SDK
-#         uses: google-github-actions/setup-gcloud@v2
-#       - name: Use gcloud CLI
-#         run: gcloud info
-#       - name: Set up Terraform
-#         uses: hashicorp/setup-terraform@v3
-#         with:
-#           terraform_version: 1.9.3
-#       - name: Deploy production infra
-#         run: |
-#           cd deploy
-#           terraform init -backend-config=prod.gcs.tfbackend
-#           terraform workspace select prod || terraform workspace new prod
-#           terraform apply --auto-approve --parallelism=1
-# name: Adjust app CI CD
-# "on": [push]
+---
+jobs:
+  terraform_unit_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code into workspace directory
+        uses: actions/checkout@v2
+      - name: Google Auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+      - name: Use gcloud CLI
+        run: gcloud info
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.3
+      - name: Run terraform unittest
+        run: |
+          cd deploy
+          terraform init -backend-config=dev.gcs.tfbackend
+          terraform workspace select unit-test || terraform workspace new unit-test
+          terraform plan -out=plan.out
+          terraform show -json plan.out > plan.json
+          cd ../test/unit_tests
+          python -m unittest check_terraform_plan.py
+      - name: Clean up
+        if: always()
+        run: |
+          cd deploy
+          terraform init -backend-config=dev.gcs.tfbackend
+          terraform workspace select default
+          terraform workspace delete -force unit-test
+  python_unit_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code into workspace directory
+        uses: actions/checkout@v2
+      - name: Google Auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+      - name: Use gcloud CLI
+        run: gcloud info
+      - name: Run python unittest
+        run: |
+          pip install -r orchestrator_func/requirements.txt
+          pip install -r executor_func/requirements.txt
+          python -m unittest discover -s orchestrator_func/test
+          python -m unittest discover -s executor_func/test
+  write_docs:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code into workspace directory
+        uses: actions/checkout@v2
+      - name: Setup Graphviz
+        uses: ts-graphviz/setup-graphviz@v2
+      - name: Generate docs
+        run: |
+          cd docs
+          python infrastructure.py
+  deploy_production:
+    if: github.ref == 'refs/heads/prod'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code into workspace directory
+        uses: actions/checkout@v2
+      - name: Google Auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+      - name: Use gcloud CLI
+        run: gcloud info
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.3
+      - name: Deploy production tables
+        run: |
+          bq mk \
+          --table \
+          bondola-ai:analytics.fass_raw \
+          ad_network_name:STRING(100),campaign_name:STRING(100),creative_name:STRING(100),start_date:DATE,end_date:DATE,platform:STRING(10),installs:INT64,ad_spend:FLOAT64,clicks:INT64,impressions:INT64,click_convertion_rate:FLOAT64,click_through_rate:FLOAT64,impressions_convertion_rate:FLOAT64,limit_ad_tracking_installs:INT64,uninstalls:INT64 \
+          --time_partitioning_field reportDay 
+          bq mk \
+          --table \
+          bondola-ai:analytics.fass_day \
+          reportDay:DATE,updatedAt:TIMESTAMP
+      - name: Deploy production infra
+        run: |
+          cd deploy
+          terraform init -backend-config=prod.gcs.tfbackend
+          terraform workspace select prod || terraform workspace new prod
+          terraform apply --auto-approve --parallelism=1
+name: FASS CI CD
+"on": [push]

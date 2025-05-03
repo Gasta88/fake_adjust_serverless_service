@@ -27,13 +27,12 @@ def get_bq_dataset(function_name):
         raise ValueError("Unable to infer DEV or PROD from function name")
 
 
-def get_with_url(url, api_key=""):
+def get_with_url(url):
     """
-    Fetches data from a specified URL using an Adjust API key and returns the data as a list of rows.
+    Fetches data from a specified URL using an FASS API key and returns the data as a list of rows.
 
     Args:
         url (str): The URL to fetch data from.
-        api_key (str, optional): The Adjust API key to use for authentication. Defaults to an empty string.
 
     Returns:
         list: A list of rows containing the fetched data.
@@ -41,13 +40,12 @@ def get_with_url(url, api_key=""):
     Raises:
         RuntimeError: If the request returns a status code other than 200 or if an exception occurs during the request.
     """
-    headers = {"Authorization": f"Bearer {api_key}"}
     try:
         response = requests.get(
-            url, headers=headers, timeout=config["timeout_limit_seconds"]
+            url, timeout=config["timeout_limit_seconds"]
         )
         response.raise_for_status()
-        return response.json().get("rows", [])
+        return response.json()
     except requests.exceptions.HTTPError as http_err:
         print(
             write_log(
@@ -95,10 +93,9 @@ def clean_raw_data(data, datetime_now):
     df_raw = pd.DataFrame(data)
     df_raw = df_raw.astype({col: "int64" for col in config["integer_cols"]})
     df_raw = df_raw.astype({col: "float64" for col in config["float_cols"]})
-    df_raw.columns = [_to_camel_case(col) for col in df_raw.columns]
-    df_raw.rename(columns={"day": "reportDay"}, inplace=True)
-    df_raw["createdAt"] = pd.to_datetime(datetime_now)
     df_raw = df_raw[config["ordered_columns"]]
+    df_raw.columns = [_to_camel_case(col) for col in df_raw.columns]
+    df_raw["createdAt"] = pd.to_datetime(datetime_now)
     return df_raw
 
 
@@ -130,7 +127,7 @@ def get_temp_prefix(bucket_name, start_date, platform):
     Returns:
         str: The GCS file name.
     """
-    return f'{bucket_name}/temp_data/{platform}/adjust_report_data_{start_date.replace("-","_")}.csv'
+    return f'{bucket_name}/temp_data/{platform}/fass_data_{start_date.replace("-","_")}.csv'
 
 
 def get_all_temp_files(bucket_name, scheduler_id):

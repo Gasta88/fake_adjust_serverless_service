@@ -18,7 +18,7 @@ class CheckTerraformPlan(unittest.TestCase):
             for resource in self.plan["planned_values"]["root_module"]["resources"]
             if resource["type"] == "google_storage_bucket"
         }
-        landing_bucket = buckets.get("google_storage_bucket.gcf-storage", None)
+        landing_bucket = buckets.get("google_storage_bucket.gcf_storage", None)
         self.assertIsNotNone(landing_bucket)
         # add more tests if more buckets are created
 
@@ -29,11 +29,11 @@ class CheckTerraformPlan(unittest.TestCase):
             for resource in self.plan["planned_values"]["root_module"]["resources"]
             if resource["type"] == "google_cloud_scheduler_job"
         }
-        scheduler_2h = schedulers.get("google_cloud_scheduler_job.every-2-hours", None)
+        scheduler_2h = schedulers.get("google_cloud_scheduler_job.every_2_hours", None)
         self.assertIsNotNone(scheduler_2h)
-        scheduler_7d = schedulers.get("google_cloud_scheduler_job.every-7-days", None)
+        scheduler_7d = schedulers.get("google_cloud_scheduler_job.every_7_days", None)
         self.assertIsNotNone(scheduler_7d)
-        scheduler_1m = schedulers.get("google_cloud_scheduler_job.every-1-month", None)
+        scheduler_1m = schedulers.get("google_cloud_scheduler_job.every_1_month", None)
         self.assertIsNotNone(scheduler_1m)
 
     def test_functions(self):
@@ -44,11 +44,11 @@ class CheckTerraformPlan(unittest.TestCase):
             if resource["type"] == "google_cloudfunctions2_function"
         }
         orchestrator = schedulers.get(
-            "google_cloudfunctions2_function.orchestrator-function", None
+            "google_cloudfunctions2_function.orchestrator_function", None
         )
         self.assertIsNotNone(orchestrator)
         executor = schedulers.get(
-            "google_cloudfunctions2_function.executor-function", None
+            "google_cloudfunctions2_function.executor_function", None
         )
         self.assertIsNotNone(executor)
 

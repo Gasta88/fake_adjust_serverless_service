@@ -53,77 +53,106 @@ class ExecutorTestCase(unittest.TestCase):
     @patch("requests.get")
     def test_get_with_url(self, mock_get):
         """Test get_with_url function"""
-        url = "https://adjust.com/api/1.2"
-        api_key = "super_secret_key"
-        mock_resp = self._mock_response(json_data={"rows": []})
-        mock_get.return_value = mock_resp
-        res = get_with_url(url, api_key=api_key)
-        self.assertTrue(len(res) == 0)
+        url = "https://example.com/api/data"
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = [{"key": "value"}]
+        mock_get.return_value = mock_response
+
+        # Test the function
+        result = get_with_url(url)
+
+        # Assert the result
+        self.assertEqual(result, [{"key": "value"}])
+        mock_get.assert_called_once_with(url, timeout=900) 
 
     def test_clean_raw_data(self):
-        """Test clean_raw_data function"""
-        input = [
+        "Test clean_raw_data function"
+        data = [
             {
                 "installs": 1,
                 "limit_ad_tracking_installs": 1,
                 "clicks": 1,
                 "impressions": 1,
-                "cost": 0.1,
-                "day": "2024-01-01",
-                "channel": "facebook",
-                "campaign": "campaign1",
+                "ad_spend": 0.1,
+                "ad_network_name": "facebook",
+                "campaign_name": "campaign1",
                 "country_code": "it",
-                "os_name": "android",
-                "creative": "creative1",
+                "platform": "android",
+                "creative_name": "creative1",
+                "uninstalls": 1,
+                "click_convertion_rate": 1.0,
+                "click_through_rate": 1.0,
+                "impressions_convertion_rate": 1.0,
+                "start_date": self.today_date,
+                "end_date": self.today_date,
             },
             {
                 "installs": 2,
                 "limit_ad_tracking_installs": 2,
                 "clicks": 2,
                 "impressions": 2,
-                "cost": 0.2,
-                "day": "2024-01-02",
-                "channel": "facebook",
-                "campaign": "campaign2",
+                "ad_spend": 0.2,
+                "ad_network_name": "facebook",
+                "campaign_name": "campaign2",
                 "country_code": "it",
-                "os_name": "android",
-                "creative": "creative2",
+                "platform": "android",
+                "creative_name": "creative2",
+                "uninstalls": 2,
+                "click_convertion_rate": 0.5,
+                "click_through_rate": 0.5,
+                "impressions_convertion_rate": 0.5,
+                "start_date": self.today_date,
+                "end_date": self.today_date,
             },
         ]
-        res = clean_raw_data(input, self.today_datetime)
-        expected = pd.DataFrame(
+
+        # Expected result
+        expected_result = pd.DataFrame(
             [
                 {
-                    "channel": "facebook",
-                    "campaign": "campaign1",
-                    "countryCode": "it",
-                    "reportDay": "2024-01-01",
-                    "osName": "android",
-                    "creative": "creative1",
+                    "adNetworkName": "facebook",
+                    "campaignName": "campaign1",
+                    "creativeName": "creative1",
+                    "startDate": self.today_date,
+                    "endDate": self.today_date,
+                    "platform": "android",
                     "installs": 1,
-                    "cost": 0.1,
+                    "adSpend": 0.1,
                     "clicks": 1,
                     "impressions": 1,
+                    "clickConvertionRate": 1.0,
+                    "clickThroughRate": 1.0,
+                    "impressionsConvertionRate": 1.0,
                     "limitAdTrackingInstalls": 1,
+                    "uninstalls": 1,
                     "createdAt": pd.to_datetime(self.today_datetime),
                 },
                 {
-                    "channel": "facebook",
-                    "campaign": "campaign2",
-                    "countryCode": "it",
-                    "reportDay": "2024-01-02",
-                    "osName": "android",
-                    "creative": "creative2",
+                    "adNetworkName": "facebook",
+                    "campaignName": "campaign2",
+                    "creativeName": "creative2",
+                    "startDate": self.today_date,
+                    "endDate": self.today_date,
+                    "platform": "android",
                     "installs": 2,
-                    "cost": 0.2,
+                    "adSpend": 0.2,
                     "clicks": 2,
                     "impressions": 2,
+                    "clickConvertionRate": 0.5,
+                    "clickThroughRate": 0.5,
+                    "impressionsConvertionRate": 0.5,
                     "limitAdTrackingInstalls": 2,
+                    "uninstalls": 2,
                     "createdAt": pd.to_datetime(self.today_datetime),
                 },
             ]
         )
-        self.assertTrue(res.equals(expected))
+        # Test the function
+        result = clean_raw_data(data, self.today_datetime)
+        # Assert the result
+        pd.testing.assert_frame_equal(result, expected_result)
+
 
     def test_get_bq_dataset(self):
         """Test get_bq_dataset function"""
@@ -141,13 +170,13 @@ class ExecutorTestCase(unittest.TestCase):
 
     def test_get_bq_tables(self):
         """Test get_bq_tables function"""
-        project_id = "justplay-data"
+        project_id = "eighth-duality-457819-r4"
         dataset_name = "analytics_test"
         expected_raw_id = (
-            f"{project_id}.{dataset_name}.adjust_spend_report_by_channel_raw"
+            f"{project_id}.{dataset_name}.fass_raw"
         )
         expected_day_id = (
-            f"{project_id}.{dataset_name}.adjust_spend_report_by_channel_day"
+            f"{project_id}.{dataset_name}.fass_day"
         )
         res_raw, res_day = get_bq_tables(dataset_name)
         self.assertEqual(res_raw, expected_raw_id)
@@ -155,10 +184,10 @@ class ExecutorTestCase(unittest.TestCase):
 
     def test_get_temp_prefix(self):
         """Test get_temp_prefix function"""
-        bucket_name = "justplay-data"
+        bucket_name = "eighth-duality-457819-r4"
         start_date = "2024-01-01"
         platform = "android"
-        expected = "justplay-data/temp_data/android/adjust_report_data_2024_01_01.csv"
+        expected = "eighth-duality-457819-r4/temp_data/android/fass_data_2024_01_01.csv"
         res = get_temp_prefix(bucket_name, start_date, platform)
         self.assertEqual(res, expected)
 
@@ -173,68 +202,68 @@ class ExecutorTestCase(unittest.TestCase):
             return mock_blob
 
         mock_gcs = mock_obj.return_value
-        bucket_name = "justplay-data"
+        bucket_name = "eighth-duality-457819-r4"
         scheduler_id = "7d"
         expected = [
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_01.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_02.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_03.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_04.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_05.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_06.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_07.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_08.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_09.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_10.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_11.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_12.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_13.csv",
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_14.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_01.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_02.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_03.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_04.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_05.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_06.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_07.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_08.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_09.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_10.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_11.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_12.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_13.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_14.csv",
+            "eighth-duality-457819-r4/temp_data/android/fass_data_2024_01_01.csv",
+            "eighth-duality-457819-r4/temp_data/android/fass_data_2024_01_02.csv",
+            "eighth-duality-457819-r4/temp_data/android/fass_data_2024_01_03.csv",
+            "eighth-duality-457819-r4/temp_data/android/fass_data_2024_01_04.csv",
+            "eighth-duality-457819-r4/temp_data/android/fass_data_2024_01_05.csv",
+            "eighth-duality-457819-r4/temp_data/android/fass_data_2024_01_06.csv",
+            "eighth-duality-457819-r4/temp_data/android/fass_data_2024_01_07.csv",
+            "eighth-duality-457819-r4/temp_data/android/fass_data_2024_01_08.csv",
+            "eighth-duality-457819-r4/temp_data/android/fass_data_2024_01_09.csv",
+            "eighth-duality-457819-r4/temp_data/android/fass_data_2024_01_10.csv",
+            "eighth-duality-457819-r4/temp_data/android/fass_data_2024_01_11.csv",
+            "eighth-duality-457819-r4/temp_data/android/fass_data_2024_01_12.csv",
+            "eighth-duality-457819-r4/temp_data/android/fass_data_2024_01_13.csv",
+            "eighth-duality-457819-r4/temp_data/android/fass_data_2024_01_14.csv",
+            "eighth-duality-457819-r4/temp_data/ios/fass_data_2024_01_01.csv",
+            "eighth-duality-457819-r4/temp_data/ios/fass_data_2024_01_02.csv",
+            "eighth-duality-457819-r4/temp_data/ios/fass_data_2024_01_03.csv",
+            "eighth-duality-457819-r4/temp_data/ios/fass_data_2024_01_04.csv",
+            "eighth-duality-457819-r4/temp_data/ios/fass_data_2024_01_05.csv",
+            "eighth-duality-457819-r4/temp_data/ios/fass_data_2024_01_06.csv",
+            "eighth-duality-457819-r4/temp_data/ios/fass_data_2024_01_07.csv",
+            "eighth-duality-457819-r4/temp_data/ios/fass_data_2024_01_08.csv",
+            "eighth-duality-457819-r4/temp_data/ios/fass_data_2024_01_09.csv",
+            "eighth-duality-457819-r4/temp_data/ios/fass_data_2024_01_10.csv",
+            "eighth-duality-457819-r4/temp_data/ios/fass_data_2024_01_11.csv",
+            "eighth-duality-457819-r4/temp_data/ios/fass_data_2024_01_12.csv",
+            "eighth-duality-457819-r4/temp_data/ios/fass_data_2024_01_13.csv",
+            "eighth-duality-457819-r4/temp_data/ios/fass_data_2024_01_14.csv",
         ]
 
         mock_gcs.list_blobs.return_value = [
-            _create_mock_blob("temp_data/android/adjust_report_data_2024_01_01.csv"),
-            _create_mock_blob("temp_data/android/adjust_report_data_2024_01_02.csv"),
-            _create_mock_blob("temp_data/android/adjust_report_data_2024_01_03.csv"),
-            _create_mock_blob("temp_data/android/adjust_report_data_2024_01_04.csv"),
-            _create_mock_blob("temp_data/android/adjust_report_data_2024_01_05.csv"),
-            _create_mock_blob("temp_data/android/adjust_report_data_2024_01_06.csv"),
-            _create_mock_blob("temp_data/android/adjust_report_data_2024_01_07.csv"),
-            _create_mock_blob("temp_data/android/adjust_report_data_2024_01_08.csv"),
-            _create_mock_blob("temp_data/android/adjust_report_data_2024_01_09.csv"),
-            _create_mock_blob("temp_data/android/adjust_report_data_2024_01_10.csv"),
-            _create_mock_blob("temp_data/android/adjust_report_data_2024_01_11.csv"),
-            _create_mock_blob("temp_data/android/adjust_report_data_2024_01_12.csv"),
-            _create_mock_blob("temp_data/android/adjust_report_data_2024_01_13.csv"),
-            _create_mock_blob("temp_data/android/adjust_report_data_2024_01_14.csv"),
-            _create_mock_blob("temp_data/ios/adjust_report_data_2024_01_01.csv"),
-            _create_mock_blob("temp_data/ios/adjust_report_data_2024_01_02.csv"),
-            _create_mock_blob("temp_data/ios/adjust_report_data_2024_01_03.csv"),
-            _create_mock_blob("temp_data/ios/adjust_report_data_2024_01_04.csv"),
-            _create_mock_blob("temp_data/ios/adjust_report_data_2024_01_05.csv"),
-            _create_mock_blob("temp_data/ios/adjust_report_data_2024_01_06.csv"),
-            _create_mock_blob("temp_data/ios/adjust_report_data_2024_01_07.csv"),
-            _create_mock_blob("temp_data/ios/adjust_report_data_2024_01_08.csv"),
-            _create_mock_blob("temp_data/ios/adjust_report_data_2024_01_09.csv"),
-            _create_mock_blob("temp_data/ios/adjust_report_data_2024_01_10.csv"),
-            _create_mock_blob("temp_data/ios/adjust_report_data_2024_01_11.csv"),
-            _create_mock_blob("temp_data/ios/adjust_report_data_2024_01_12.csv"),
-            _create_mock_blob("temp_data/ios/adjust_report_data_2024_01_13.csv"),
-            _create_mock_blob("temp_data/ios/adjust_report_data_2024_01_14.csv"),
+            _create_mock_blob("temp_data/android/fass_data_2024_01_01.csv"),
+            _create_mock_blob("temp_data/android/fass_data_2024_01_02.csv"),
+            _create_mock_blob("temp_data/android/fass_data_2024_01_03.csv"),
+            _create_mock_blob("temp_data/android/fass_data_2024_01_04.csv"),
+            _create_mock_blob("temp_data/android/fass_data_2024_01_05.csv"),
+            _create_mock_blob("temp_data/android/fass_data_2024_01_06.csv"),
+            _create_mock_blob("temp_data/android/fass_data_2024_01_07.csv"),
+            _create_mock_blob("temp_data/android/fass_data_2024_01_08.csv"),
+            _create_mock_blob("temp_data/android/fass_data_2024_01_09.csv"),
+            _create_mock_blob("temp_data/android/fass_data_2024_01_10.csv"),
+            _create_mock_blob("temp_data/android/fass_data_2024_01_11.csv"),
+            _create_mock_blob("temp_data/android/fass_data_2024_01_12.csv"),
+            _create_mock_blob("temp_data/android/fass_data_2024_01_13.csv"),
+            _create_mock_blob("temp_data/android/fass_data_2024_01_14.csv"),
+            _create_mock_blob("temp_data/ios/fass_data_2024_01_01.csv"),
+            _create_mock_blob("temp_data/ios/fass_data_2024_01_02.csv"),
+            _create_mock_blob("temp_data/ios/fass_data_2024_01_03.csv"),
+            _create_mock_blob("temp_data/ios/fass_data_2024_01_04.csv"),
+            _create_mock_blob("temp_data/ios/fass_data_2024_01_05.csv"),
+            _create_mock_blob("temp_data/ios/fass_data_2024_01_06.csv"),
+            _create_mock_blob("temp_data/ios/fass_data_2024_01_07.csv"),
+            _create_mock_blob("temp_data/ios/fass_data_2024_01_08.csv"),
+            _create_mock_blob("temp_data/ios/fass_data_2024_01_09.csv"),
+            _create_mock_blob("temp_data/ios/fass_data_2024_01_10.csv"),
+            _create_mock_blob("temp_data/ios/fass_data_2024_01_11.csv"),
+            _create_mock_blob("temp_data/ios/fass_data_2024_01_12.csv"),
+            _create_mock_blob("temp_data/ios/fass_data_2024_01_13.csv"),
+            _create_mock_blob("temp_data/ios/fass_data_2024_01_14.csv"),
         ]
         res = get_all_temp_files(bucket_name, scheduler_id)
         self.assertEqual(res, expected)
@@ -253,17 +282,17 @@ class ExecutorTestCase(unittest.TestCase):
                     "limitAdTrackingInstalls": 1,
                     "clicks": 1,
                     "impressions": 1,
-                    "cost": 0.1,
-                    "reportDay": "2024-01-01",
+                    "ad_spend": 0.1,
+                    "startDate": "2024-01-01",
                     "createdAt": pd.to_datetime(self.today_datetime),
                 }
             ]
         )
-        table_id = "analytics_test.adjust_spend_report_by_channel_raw"
+        table_id = "analytics_test.fass_raw"
         mock_to_gbq.return_value = None
         write_raw_to_bq(df, table_id)
         mock_to_gbq.assert_called_with(
-            df, table_id, project_id="justplay-data", if_exists="append"
+            df, table_id, project_id="eighth-duality-457819-r4", if_exists="append"
         )
 
     @patch("google.cloud.bigquery.Client")
@@ -271,10 +300,10 @@ class ExecutorTestCase(unittest.TestCase):
         """Test update_day_table function"""
         mock_bq = mock_obj.return_value
         all_files = [
-            "justplay-data/temp_data/android/adjust_report_data_2024_01_01.csv",
-            "justplay-data/temp_data/ios/adjust_report_data_2024_01_01.csv",
+            "eighth-duality-457819-r4/temp_data/android/fass_data_2024_01_01.csv",
+            "eighth-duality-457819-r4/temp_data/ios/fass_data_2024_01_01.csv",
         ]
-        table_id = "analytics_test.adjust_spend_report_by_channel_day"
+        table_id = "analytics_test.fass_day"
         update_day_table(all_files, self.today_datetime, table_id)
         mock_bq.query.assert_called_with(
             f"""INSERT INTO {table_id}
