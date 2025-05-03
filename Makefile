@@ -40,24 +40,7 @@ clean_api:
 		--region ${REGION} \
 		--platform managed --quiet || true
 
-#FASS GCP Deployment
-#Build FASS
-deploy_fass:
-	@echo "Deploying to GCP..."
-	@cd deploy && \
-	( terraform init -backend-config=${ENV}.gcs.tfbackend || terraform init -backend-config=${ENV}.gcs.tfbackend -reconfigure) && \
-	( terraform workspace select ${ENV} || terraform workspace new ${ENV} ) && \
-	terraform apply --parallelism=1
-
-#Clean FASS
-clean_fass:
-	@echo "Cleaning up GCP resources..."
-	@cd deploy && \
-	( terraform init -backend-config=${ENV}.gcs.tfbackend || terraform init -backend-config=${ENV}.gcs.tfbackend -reconfigure) && \
-	( terraform workspace select ${ENV} || terraform workspace new ${ENV} ) && \
-	terraform destroy
-
 # Default target
-deploy-all: deploy_api deploy_fass
+deploy-all: deploy_api
 
-.PHONY: deploy_api clean_api deploy_fass clean_fass deploy-all
+.PHONY: deploy_api clean_api deploy-all
