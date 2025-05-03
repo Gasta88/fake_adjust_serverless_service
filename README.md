@@ -1,13 +1,5 @@
 # Adjust Report API Function
 
-| Branch    | Status |
-| -------- | ------- |
-| Main  | [![Fake Adjust Serverless CI CD on Main](https://github.com/Gasta88/fake_adjust_serverless_service/actions/workflows/cicd.yaml/badge.svg?branch=main)](https://github.com/Gasta88/fake_adjust_serverless_service/actions/workflows/cicd.yaml)    |
-| Developement | [![Fake Adjust Serverless CI CD on Development](https://github.com/Gasta88/fake_adjust_serverless_service/actions/workflows/cicd.yaml/badge.svg?branch=development)](https://github.com/Gasta88/fake_adjust_serverless_service/actions/workflows/cicd.yaml)     |
-
-
-
-
 ## Purpose/Goals
 
 The *Fake Adjust Serverless Service* is a service used to query the Fake Adjust REST API and retrieve the attribution reporting data.
