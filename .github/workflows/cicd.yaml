@@ -65,7 +65,7 @@ jobs:
           cd docs
           python infrastructure.py
   deploy_production:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/prod'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
