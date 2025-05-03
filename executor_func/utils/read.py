@@ -93,10 +93,9 @@ def clean_raw_data(data, datetime_now):
     df_raw = pd.DataFrame(data)
     df_raw = df_raw.astype({col: "int64" for col in config["integer_cols"]})
     df_raw = df_raw.astype({col: "float64" for col in config["float_cols"]})
-    df_raw.columns = [_to_camel_case(col) for col in df_raw.columns]
-    df_raw.rename(columns={"day": "reportDay"}, inplace=True)
-    df_raw["createdAt"] = pd.to_datetime(datetime_now)
     df_raw = df_raw[config["ordered_columns"]]
+    df_raw.columns = [_to_camel_case(col) for col in df_raw.columns]
+    df_raw["createdAt"] = pd.to_datetime(datetime_now)
     return df_raw
 
 
