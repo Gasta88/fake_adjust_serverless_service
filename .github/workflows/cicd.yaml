@@ -92,14 +92,14 @@ jobs:
             bq mk \
             --table \
             "$RAW_TABLE" \
-            reportDay:DATE,adNetworkName:STRING(100),campaignName:STRING(100),creativeName:STRING(100),startDate:STRING(10),endDate:STRING(10),platform:STRING(10),installs:INT64,adSpend:FLOAT64,clicks:INT64,impressions:INT64,clickConvertionRate:FLOAT64,clickThroughRate:FLOAT64,impressionsConvertionRate:FLOAT64,limitAdTrackingInstalls:INT64,uninstalls:INT64,createdAt:TIMESTAMP \
+            "reportDay:DATE,adNetworkName:STRING(100),campaignName:STRING(100),creativeName:STRING(100),startDate:STRING(10),endDate:STRING(10),platform:STRING(10),installs:INT64,adSpend:FLOAT64,clicks:INT64,impressions:INT64,clickConvertionRate:FLOAT64,clickThroughRate:FLOAT64,impressionsConvertionRate:FLOAT64,limitAdTrackingInstalls:INT64,uninstalls:INT64,createdAt:TIMESTAMP" \
             --time_partitioning_field reportDay
           fi
           if ! bq show "$DAY_TABLE" >/dev/null 2>&1; then
             bq mk \
             --table \
             "$DAY_TABLE" \
-            reportDay:DATE,updatedAt:TIMESTAMP
+            "reportDay:DATE,updatedAt:TIMESTAMP"
           fi
       - name: Deploy production infra
         run: |
