@@ -1,46 +1,35 @@
-# Define variables
-IMAGE_NAME_API := fake_adjust
-IMAGE_TAG := latest
-ENV := dev
-GAR_LOCATION := us-central1-docker.pkg.dev/eighth-duality-457819-r4/data-ecr
-REGION := us-central1
-SERVICE_NAME := fass-api
+# Local helpers for the Fake Adjust Serverless Service.
+#
+# The stage-1 Fake Adjust API lives in a separate repository:
+#   https://github.com/Gasta88/fake_adjust
+# Deploy it there first, then set FASS_API_URL when applying Terraform.
 
-#Fake FASS API commands
-# Build the Docker image and Run API Image
-deploy_api:
-	@echo "Building Docker image..."
-	@if ! docker build fake_adjust_api --file fake_adjust_api/Dockerfile --tag $(GAR_LOCATION)/$(IMAGE_NAME_API):$(IMAGE_TAG); then \
-        echo "Docker image build failed."; \
-		docker rmi -f $(IMAGE_NAME_API):$(IMAGE_TAG) || true; \
-        exit 1; \
-	fi
-	@echo "Pushing Docker container..."
-	@if ! docker push $(GAR_LOCATION)/$(IMAGE_NAME_API):$(IMAGE_TAG); then \
-        echo "Docker container failed to be pushed."; \
-        exit 1; \
-	fi
-	@echo "Destroy existing version on Cloud Run if it exists"
-	@gcloud run services delete ${SERVICE_NAME} \
-		--region ${REGION} \
-		--platform managed --quiet || true
-	@echo "Deploy new version to Cloud Run"
-	@gcloud run deploy ${SERVICE_NAME} \
-		--image $(GAR_LOCATION)/$(IMAGE_NAME_API):$(IMAGE_TAG) \
-		--region ${REGION} \
-		--set-env-vars GCS_BUCKET=fass-${ENV},SERVICE_NAME=${SERVICE_NAME} \
-		--platform managed \
-		--allow-unauthenticated
+ENV ?= dev
+TF_DIR := deploy
+TF_BACKEND := $(notdir $(ENV).gcs.tfbackend)
+WORKSPACE ?= $(ENV)
 
+.PHONY: help test plan deploy docs
 
-# Clean up Docker resources
-clean_api:
-	@echo "Destroy existing version on Cloud Run if it exists"
-	@gcloud run services delete ${SERVICE_NAME} \
-		--region ${REGION} \
-		--platform managed --quiet || true
+help:
+	@echo "make test                 Run the Python unit tests"
+	@echo "make plan  [ENV=dev]      Terraform init + plan in the $(ENV) workspace"
+	@echo "make deploy [ENV=prod]    Terraform init + apply in the $(ENV) workspace"
+	@echo "make docs                 Regenerate the architecture diagram"
 
-# Default target
-deploy-all: deploy_api
+test:
+	python -m unittest discover -s orchestrator_func/test
+	python -m unittest discover -s executor_func/test
 
-.PHONY: deploy_api clean_api deploy-all
+plan:
+	cd $(TF_DIR) && terraform init -backend-config=$(TF_BACKEND)
+	cd $(TF_DIR) && terraform workspace select $(WORKSPACE) || terraform workspace new $(WORKSPACE)
+	cd $(TF_DIR) && terraform plan
+
+deploy:
+	cd $(TF_DIR) && terraform init -backend-config=$(TF_BACKEND)
+	cd $(TF_DIR) && terraform workspace select $(WORKSPACE) || terraform workspace new $(WORKSPACE)
+	cd $(TF_DIR) && terraform apply
+
+docs:
+	cd docs && pip install -r requirements.txt && python infrastructure.py
