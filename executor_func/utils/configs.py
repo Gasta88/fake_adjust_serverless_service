@@ -1,7 +1,9 @@
+import os
+
 # Main configuration for the Python script and Adjust Report API interaction
 
 config = {
-    "project_id": "eighth-duality-457819-r4",
+    "project_id": os.environ.get("GCP_PROJECT_ID", "eighth-duality-457819-r4"),
     "table_raw_name": "fass_raw",
     "table_day_name": "fass_day",
     "integer_cols": ["installs", "limit_ad_tracking_installs", "clicks", "impressions", "uninstalls"],
