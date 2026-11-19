@@ -12,17 +12,12 @@ env:
 jobs:
   terraform_unit_tests:
     runs-on: ubuntu-latest
+    env:
+      # Offline plan: a static token lets the provider configure without GCP auth.
+      GOOGLE_OAUTH_ACCESS_TOKEN: offline-plan-token
     steps:
       - name: Checkout code into workspace directory
         uses: actions/checkout@v4
-      - name: Google Auth
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.SERVICE_ACCOUNT_KEY }}
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-      - name: Use gcloud CLI
-        run: gcloud info
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
@@ -30,19 +25,11 @@ jobs:
       - name: Run terraform unittest
         run: |
           cd deploy
-          terraform init -backend-config=dev.gcs.tfbackend
-          terraform workspace select unit-test || terraform workspace new unit-test
+          terraform init -backend=false
           terraform plan -out=plan.out
           terraform show -json plan.out > plan.json
           cd ../test/unit_tests
           python -m unittest check_terraform_plan.py
-      - name: Clean up
-        if: always()
-        run: |
-          cd deploy
-          terraform init -backend-config=dev.gcs.tfbackend
-          terraform workspace select default
-          terraform workspace delete -force unit-test
   python_unit_tests:
     runs-on: ubuntu-latest
     steps:
