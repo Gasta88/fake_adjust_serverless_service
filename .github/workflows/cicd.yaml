@@ -1,10 +1,20 @@
 ---
+name: FASS CI CD
+
+"on":
+  push:
+  workflow_dispatch:
+
+env:
+  BQ_PROJECT: ${{ vars.BQ_PROJECT || 'bondola-ai' }}
+  BQ_DATASET: ${{ vars.BQ_DATASET || 'analytics' }}
+
 jobs:
   terraform_unit_tests:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code into workspace directory
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Google Auth
         uses: google-github-actions/auth@v2
         with:
@@ -37,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code into workspace directory
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Google Auth
         uses: google-github-actions/auth@v2
         with:
@@ -57,7 +67,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code into workspace directory
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Setup Graphviz
         uses: ts-graphviz/setup-graphviz@v2
       - name: Generate docs
@@ -66,12 +76,13 @@ jobs:
           pip install -r requirements.txt
           python infrastructure.py
   deploy_production:
-    if: github.ref == 'refs/heads/prod'
+    needs: [terraform_unit_tests, python_unit_tests]
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - name: Checkout code into workspace directory
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Google Auth
         uses: google-github-actions/auth@v2
         with:
@@ -86,20 +97,24 @@ jobs:
           terraform_version: 1.9.3
       - name: Deploy production tables
         run: |
-          bq mk \
-          --table \
-          bondola-ai:analytics.fass_raw \
-          ad_network_name:STRING(100),campaign_name:STRING(100),creative_name:STRING(100),start_date:DATE,end_date:DATE,platform:STRING(10),installs:INT64,ad_spend:FLOAT64,clicks:INT64,impressions:INT64,click_convertion_rate:FLOAT64,click_through_rate:FLOAT64,impressions_convertion_rate:FLOAT64,limit_ad_tracking_installs:INT64,uninstalls:INT64 \
-          --time_partitioning_field reportDay 
-          bq mk \
-          --table \
-          bondola-ai:analytics.fass_day \
-          reportDay:DATE,updatedAt:TIMESTAMP
+          RAW_TABLE="$BQ_PROJECT:$BQ_DATASET.fass_raw"
+          DAY_TABLE="$BQ_PROJECT:$BQ_DATASET.fass_day"
+          if ! bq show "$RAW_TABLE" >/dev/null 2>&1; then
+            bq mk \
+            --table \
+            "$RAW_TABLE" \
+            reportDay:DATE,adNetworkName:STRING(100),campaignName:STRING(100),creativeName:STRING(100),startDate:STRING(10),endDate:STRING(10),platform:STRING(10),installs:INT64,adSpend:FLOAT64,clicks:INT64,impressions:INT64,clickConvertionRate:FLOAT64,clickThroughRate:FLOAT64,impressionsConvertionRate:FLOAT64,limitAdTrackingInstalls:INT64,uninstalls:INT64,createdAt:TIMESTAMP \
+            --time_partitioning_field reportDay
+          fi
+          if ! bq show "$DAY_TABLE" >/dev/null 2>&1; then
+            bq mk \
+            --table \
+            "$DAY_TABLE" \
+            reportDay:DATE,updatedAt:TIMESTAMP
+          fi
       - name: Deploy production infra
         run: |
           cd deploy
           terraform init -backend-config=prod.gcs.tfbackend
           terraform workspace select prod || terraform workspace new prod
           terraform apply --auto-approve --parallelism=1
-name: FASS CI CD
-"on": [push]
