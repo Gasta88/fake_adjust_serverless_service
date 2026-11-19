@@ -36,7 +36,7 @@ def call_api(request):
                     f"url: {final_url}",
                 )
             )
-            results = get_with_url(final_url, args["adjust_api_key"])
+            results = get_with_url(final_url)
             if len(results) == 0:
                 print(
                     write_log(

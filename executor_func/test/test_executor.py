@@ -126,6 +126,7 @@ class ExecutorTestCase(unittest.TestCase):
                     "impressionsConvertionRate": 1.0,
                     "limitAdTrackingInstalls": 1,
                     "uninstalls": 1,
+                    "reportDay": datetime.date.fromisoformat(self.today_date),
                     "createdAt": pd.to_datetime(self.today_datetime),
                 },
                 {
@@ -144,6 +145,7 @@ class ExecutorTestCase(unittest.TestCase):
                     "impressionsConvertionRate": 0.5,
                     "limitAdTrackingInstalls": 2,
                     "uninstalls": 2,
+                    "reportDay": datetime.date.fromisoformat(self.today_date),
                     "createdAt": pd.to_datetime(self.today_datetime),
                 },
             ]
