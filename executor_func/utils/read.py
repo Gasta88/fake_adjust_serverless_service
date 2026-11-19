@@ -95,6 +95,7 @@ def clean_raw_data(data, datetime_now):
     df_raw = df_raw.astype({col: "float64" for col in config["float_cols"]})
     df_raw = df_raw[config["ordered_columns"]]
     df_raw.columns = [_to_camel_case(col) for col in df_raw.columns]
+    df_raw["reportDay"] = pd.to_datetime(df_raw["startDate"]).dt.date
     df_raw["createdAt"] = pd.to_datetime(datetime_now)
     return df_raw
 

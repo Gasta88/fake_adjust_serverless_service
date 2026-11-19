@@ -1,6 +1,6 @@
 provider "google" {
-  region = "us-central1"
-  project = "eighth-duality-457819-r4"
+  region  = var.region
+  project = var.project_id
 }
 
 terraform {
@@ -78,7 +78,7 @@ resource "google_cloud_scheduler_job" "every_2_hours" {
       "Content-Type" = "application/json"
     }
     oidc_token {
-      service_account_email = "874544665874-compute@developer.gserviceaccount.com"
+      service_account_email = var.service_account_email
       audience = google_cloudfunctions2_function.orchestrator_function.url
     }
   }
@@ -106,7 +106,7 @@ resource "google_cloud_scheduler_job" "every_7_days" {
       "Content-Type" = "application/json"
     }
     oidc_token {
-      service_account_email = "874544665874-compute@developer.gserviceaccount.com"
+      service_account_email = var.service_account_email
       audience = google_cloudfunctions2_function.orchestrator_function.url
     }
   }
@@ -133,7 +133,7 @@ resource "google_cloud_scheduler_job" "every_1_month" {
       "Content-Type" = "application/json"
     }
     oidc_token {
-      service_account_email = "874544665874-compute@developer.gserviceaccount.com"
+      service_account_email = var.service_account_email
       audience = google_cloudfunctions2_function.orchestrator_function.url
     }
   }
@@ -163,8 +163,10 @@ resource "google_cloudfunctions2_function" "orchestrator_function" {
     available_memory    = "512M"
     timeout_seconds     = 1920
     environment_variables = {
-        EXECUTOR_URL = google_cloudfunctions2_function.executor_function.url
-        GCS_BUCKET = google_storage_bucket.gcf_storage.name
+        EXECUTOR_URL    = google_cloudfunctions2_function.executor_function.url
+        GCS_BUCKET      = google_storage_bucket.gcf_storage.name
+        GCP_PROJECT_ID  = var.project_id
+        FASS_API_URL    = var.fass_api_url
     }
   }
 }
@@ -191,7 +193,8 @@ resource "google_cloudfunctions2_function" "executor_function" {
     available_cpu = "2"
     timeout_seconds     = 1200
     environment_variables = {
-        GCS_BUCKET = google_storage_bucket.gcf_storage.name
+        GCS_BUCKET     = google_storage_bucket.gcf_storage.name
+        GCP_PROJECT_ID = var.project_id
     }
   }
 }
