@@ -24,8 +24,10 @@ jobs:
           terraform_version: 1.9.3
       - name: Run terraform unittest
         run: |
+          # Use local state for the offline plan; the runner is ephemeral.
+          sed -i 's/^  backend "gcs" {}$/  backend "local" {}/' deploy/main.tf
           cd deploy
-          terraform init -backend=false
+          terraform init
           terraform plan -out=plan.out
           terraform show -json plan.out > plan.json
           cd ../test/unit_tests
